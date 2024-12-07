@@ -4,7 +4,6 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <errno.h>
-#include <string.h>
 #include <stdbool.h>
 
 /* Compatibility with Windows OS and POSIX systems*/
@@ -33,13 +32,22 @@ void createDbFile(const char *filename);
 int main(void) {
     createDbDirectory();
     createDbFile(USER_FILE);
+
+    return 0;
 }
 
 void createDbFile(const char *filename) {
-    FILE *file;
-    file = fopen(getDbFilePath(filename), "w+");
-    
+    char *filePath = getDbFilePath(filename);
+    FILE *file = fopen(filePath, "w+");
+
+    if (file == NULL) {
+        perror("Error creating database file");
+        free(filePath);
+        exit(EXIT_FAILURE);
+    }
+
     fclose(file);
+    free(filePath);
 }
 
 char *getDbFilePath(const char *filename) {
