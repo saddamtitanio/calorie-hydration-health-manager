@@ -4,5 +4,6 @@
 char *getDbFilePath();
 bool createDbDirectory();
 void createDbFile();
+void closeDBFile(FILE **file, char **filePath);
 
 #endif

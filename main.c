@@ -53,6 +53,7 @@ void handleProfileOption(int option, User *user) {
             setCurrentUser(user);
             break;
         case 4:
+            deleteUser();
             break;
         case 5:
             break;

@@ -19,6 +19,7 @@ char *getDbFilePath() {
     char *filePath = malloc(filePathSize + 1);
     
     if (filePath == NULL) {
+        return NULL;
         exit(EXIT_FAILURE);
     }    
     snprintf(filePath, filePathSize + 1, "%s/%s", DATABASE_DIR, USER_FILE);
@@ -56,4 +57,13 @@ void createDbFile() {
     free(filePath);
 }
 
-
+void closeDBFile(FILE **file, char **filePath) {
+    if (*file) {
+        fclose(*file);
+        *file = NULL;
+    }
+    if (*filePath) {
+        free(*filePath);
+        *filePath = NULL;
+    }
+}
