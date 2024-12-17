@@ -44,14 +44,14 @@ void createUser(User *user) {
 
     if (filePath == NULL) {
         perror("Failed to get path.");
-        return -1;
+        return;
     }
     FILE *file = fopen(filePath, "a+");
 
     if (file == NULL) {
         perror("Error opening file");
         free(filePath);
-        return -1; 
+        return; 
     }
     char ch;
     bool isValid = true;
@@ -163,7 +163,7 @@ int displayUsers() {
     char *filePath = getDbFilePath();
     if (filePath == NULL) {
         perror("Failed to get path.");
-        return NULL;
+        return -1;
     }
 
     FILE *file = fopen(filePath, "r");
@@ -210,14 +210,14 @@ void retrieveAllUsers() {
     
     if (filePath == NULL) {
         perror("Failed to get path.");
-        return NULL;
+        return;
     }
 
     FILE *file = fopen(filePath, "r");
     if (file == NULL) {
         perror("Error opening file");
         free(filePath);
-        return -1; 
+        return; 
     }
 
     int userCount = displayUsers();
