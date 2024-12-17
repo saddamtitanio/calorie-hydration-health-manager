@@ -8,7 +8,7 @@
 #include "usersController.h"
 
 int getLastUserId() {
-    char *filePath = getDbFilePath();
+    char *filePath = getDbFilePath(USER_FILE);
     if (filePath == NULL) {
         perror("Failed to get path.");
         return -1;
@@ -40,7 +40,7 @@ int getLastUserId() {
 void createUser(User *user) {
     printf("\n=========== PROFILE SETUP ===========\n");
 
-    char *filePath = getDbFilePath();
+    char *filePath = getDbFilePath(USER_FILE);
 
     if (filePath == NULL) {
         perror("Failed to get path.");
@@ -129,7 +129,7 @@ void createUser(User *user) {
 }
 
 char *getUser(int targetLine, User *user) {
-    char *filePath = getDbFilePath();
+    char *filePath = getDbFilePath(USER_FILE);
     if (filePath == NULL) {
         perror("Failed to get path.");
         return NULL;
@@ -170,7 +170,7 @@ int displayUsers() {
     char *token;
     int tokenIndex = 0;
 
-    char *filePath = getDbFilePath();
+    char *filePath = getDbFilePath(USER_FILE);
     if (filePath == NULL) {
         perror("Failed to get path.");
         return -1;
@@ -216,7 +216,7 @@ int displayUsers() {
 void retrieveAllUsers() {
     char option[3];
     char line[256];
-    char *filePath = getDbFilePath();
+    char *filePath = getDbFilePath(USER_FILE);
     
     if (filePath == NULL) {
         perror("Failed to get path.");
@@ -352,7 +352,7 @@ void setCurrentUser(User *user) {
 }
 
 int deleteUser() {
-    char *filePath = getDbFilePath();
+    char *filePath = getDbFilePath(USER_FILE);
     if (filePath == NULL) {
         perror("Failed to get path.");
         return -1;

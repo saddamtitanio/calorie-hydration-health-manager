@@ -65,19 +65,33 @@ void showDetails(char *line, int *currentUserCount) {
     printf("|%-34s|\n", " ");
 }
 
-FitnessStatus bmiCategory(User *user) {
-    if (user->bmi < 18.5) {
+FitnessStatus bmiCategory(float bmi) {
+    if (bmi < 18.5) {
         return UNDERWEIGHT;
     }
-    else if (user->bmi < 25) {
+    else if (bmi < 25) {
         return NORMAL;
     }
-    else if (user->bmi < 30) {
+    else if (bmi < 30) {
         return OVERWEIGHT;
     }
     else {
         return OBESE;
     }
+}
+
+bool isValidWeightTarget(float targetWeight, float height) {
+    float newBMI = calculateBMI(height, targetWeight);
+    FitnessStatus fitnessStatus = bmiCategory(newBMI);
+    height /= 100;
+
+    if (fitnessStatus == UNDERWEIGHT || fitnessStatus == OVERWEIGHT || fitnessStatus == OBESE) {
+        float lowWeightRange = NORMAL_LOW_THRESHOLD_VALUE * height * height;
+        float highWeightRange = NORMAL_HIGH_THRESHOLD_VALUE * height * height;
+        printf("Invalid weight range. Valid range (%.2f kg - %.2f kg)\n", lowWeightRange, highWeightRange);
+        return false;
+    }
+    return true;
 }
 
 char *printStatus(FitnessStatus fitnessStatus) {
