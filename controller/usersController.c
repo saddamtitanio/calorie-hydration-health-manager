@@ -9,15 +9,21 @@
 
 int getLastUserId() {
     char *filePath = getDbFilePath();
+    if (filePath == NULL) {
+        perror("Failed to get path.");
+        return -1;
+    }
+
     FILE *file = fopen(filePath, "r");
-    char line[256];
-    int lastId = 0;
 
     if (file == NULL) {
         perror("Error opening file");
         free(filePath);
         return -1; 
     }
+
+    char line[256];
+    int lastId = 0;
 
     while (fgets(line, sizeof(line), file) != NULL) {
         char *token = strtok(line, "|");
@@ -35,7 +41,18 @@ void createUser(User *user) {
     printf("\n=========== PROFILE SETUP ===========\n");
 
     char *filePath = getDbFilePath();
+
+    if (filePath == NULL) {
+        perror("Failed to get path.");
+        return -1;
+    }
     FILE *file = fopen(filePath, "a+");
+
+    if (file == NULL) {
+        perror("Error opening file");
+        free(filePath);
+        return -1; 
+    }
     char ch;
     bool isValid = true;
 
@@ -101,31 +118,39 @@ void createUser(User *user) {
     printf("\n\n");
 }
 
-void getUser(int targetLine, User *user) {
+char *getUser(int targetLine, User *user) {
     char *filePath = getDbFilePath();
-
-    FILE *file = fopen(filePath, "r");
-    int currentLine = 1;
-    char buffer[255];
-
-    if (file == NULL) {
-        perror("Error opening file.");
-        exit(EXIT_FAILURE);
+    if (filePath == NULL) {
+        perror("Failed to get path.");
+        return NULL;
     }
 
-    while (fgets(buffer, sizeof(buffer), file) != NULL) {
+    FILE *file = fopen(filePath, "r");
+    if (file == NULL) {
+        perror("Error opening file.");
+        return NULL;
+    }
+
+    int currentLine = 1;
+    char *buffer = malloc(256);
+
+    if (buffer == NULL) {
+        perror("Error memory allocation.");
+        return NULL;
+    }
+
+    while (fgets(buffer, 256, file) != NULL) {
         if (currentLine == targetLine) {
-            decomposeLine(buffer, user);
-            break;
+            closeDBFile(&file, &filePath);
+            return buffer;
         }
         currentLine++;
     }
 
-    if (currentLine < targetLine) {
-        printf("User does not exist.\n");
-    }
+    printf("User does not exist.\n");
 
     closeDBFile(&file, &filePath);
+    return NULL;
 }
 
 
@@ -134,9 +159,14 @@ int displayUsers() {
     char line[256];
     char *token;
     int tokenIndex = 0;
-    char *filePath = getDbFilePath();
-    FILE *file = fopen(filePath, "r");
 
+    char *filePath = getDbFilePath();
+    if (filePath == NULL) {
+        perror("Failed to get path.");
+        return NULL;
+    }
+
+    FILE *file = fopen(filePath, "r");
     if (file == NULL) {
         perror("Error opening file");
         free(filePath);
@@ -177,7 +207,18 @@ void retrieveAllUsers() {
     char option[3];
     char line[256];
     char *filePath = getDbFilePath();
+    
+    if (filePath == NULL) {
+        perror("Failed to get path.");
+        return NULL;
+    }
+
     FILE *file = fopen(filePath, "r");
+    if (file == NULL) {
+        perror("Error opening file");
+        free(filePath);
+        return -1; 
+    }
 
     int userCount = displayUsers();
 
@@ -238,6 +279,7 @@ void retrieveAllUsers() {
                     clearInputBuffer();
                     break;
                 }
+                clearInputBuffer();
             } else {
                 break;
             }
@@ -254,9 +296,16 @@ void retrieveAllUsers() {
     closeDBFile(&file, &filePath);
 }
 
-void decomposeLine(char *line, User *user) {
+
+void setCurrentUser(User *user) {
+    int userChoice;
+
+    displayUsers();
+    printf("Choose user: ");
+    scanf("%d", &userChoice);
+
     char *token;
-    token = strtok(line, "|");
+    token = strtok(getUser(userChoice, user), "|");
     
     int i = 0;
     while (token != NULL) {
@@ -278,6 +327,9 @@ void decomposeLine(char *line, User *user) {
                 user->weight = atof(token);
                 break;
             case 5:
+                user->bmi = atof(token);
+                break;
+            case 6:
                 strcpy(user->datetime, token);
                 user->datetime[strlen(user->datetime)] = '\0';
                 break;
@@ -287,16 +339,6 @@ void decomposeLine(char *line, User *user) {
         token = strtok(NULL, "|");
         i++;
     }
-}
-
-void setCurrentUser(User *user) {
-    int userChoice;
-
-    displayUsers();
-    printf("Choose user: ");
-    scanf("%d", &userChoice);
-
-    getUser(userChoice, user);
 }
 
 int deleteUser() {
@@ -378,7 +420,7 @@ int deleteUser() {
     if (rename(TEMP_DB_FILE, filePath) != 0) {
         perror("Error renaming temporary file");
     } else {
-        printf("User %d successfully deleted.\n\n", selectedLine);
+        printf("User successfully deleted.\n\n");
     }
 
     free(buffer);

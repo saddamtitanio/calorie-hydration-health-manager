@@ -19,12 +19,10 @@ typedef struct {
     float bmi;
 } User;
 
-void decomposeLine(char *line, User *user);
 void setCurrentUser(User *user);
-
 int getLastUserId();
 void createUser(User *user);
-void getUser(int targetLine, User *user);
+char *getUser(int targetLine, User *user);
 int displayUsers();
 void retrieveAllUsers();
 int deleteUser();
