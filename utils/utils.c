@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include "utils.h"
 
 void clearInputBuffer() {
     while(getchar() != '\n');
@@ -62,4 +63,37 @@ void showDetails(char *line, int *currentUserCount) {
         tokenIndex++;
     }
     printf("|%-34s|\n", " ");
+}
+
+FitnessStatus bmiCategory(User *user) {
+    if (user->bmi < 18.5) {
+        return UNDERWEIGHT;
+    }
+    else if (user->bmi < 25) {
+        return NORMAL;
+    }
+    else if (user->bmi < 30) {
+        return OVERWEIGHT;
+    }
+    else {
+        return OBESE;
+    }
+}
+
+char *printStatus(FitnessStatus fitnessStatus) {
+    if (fitnessStatus == UNDERWEIGHT) {
+        return "Underweight";
+    }
+    else if (fitnessStatus == NORMAL) {
+        return "Normal";
+    }
+    else if (fitnessStatus == OVERWEIGHT) {
+        return "Overweight";
+    }
+    else if (fitnessStatus == OBESE) {
+        return "Obese";
+    } 
+    else {
+        return NULL;
+    }
 }

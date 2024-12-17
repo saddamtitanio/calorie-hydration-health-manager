@@ -81,6 +81,16 @@ void createUser(User *user) {
         if(!rangeCheck(&user->age, 0, "Invalid Age.", &isValid)) continue;
         clearInputBuffer();
 
+        printf("Sex\n1. Male\n2. Female\nOption: ");
+        if(!isDataValid(scanf("%d", &user->sex), &isValid, "Invalid Sex.")) continue;
+        if (user->sex != 1 && user->sex != 2) {
+            isValid = false;
+            printf("Invalid Sex.\n\n");
+            clearInputBuffer();
+            continue;
+        }
+        clearInputBuffer();
+
         printf("Height (cm): ");
         if(!isDataValid(scanf("%f", &user->height), &isValid, "Invalid Height.")) continue;
         if(!rangeCheck(&user->height, 1, "Invalid Height.", &isValid)) continue;
@@ -96,7 +106,7 @@ void createUser(User *user) {
     } while (!isValid);
     
     char *currDateTime = getCurrentLocalDateTime();
-    int bufferLength = strlen(user->name) + MAX_AGE_DIGIT + MAX_FLOAT_DIGIT * 3 + strlen(currDateTime) + 1 + MEMBERS_COUNT;
+    int bufferLength = strlen(user->name) + MAX_AGE_DIGIT + MAX_FLOAT_DIGIT * 3 + strlen(currDateTime) + 2 + MEMBERS_COUNT;
     char *buffer = malloc(bufferLength);
 
     if (!buffer) {
@@ -107,7 +117,7 @@ void createUser(User *user) {
     user->id = getLastUserId() + 1;
     user->bmi = calculateBMI(user->height, user->weight);
 
-    snprintf(buffer, bufferLength, "%d|%s|%d|%.2f|%.2f|%.2f|%s\n", user->id, user->name, user->age, user->height, user->weight, user->bmi, currDateTime);
+    snprintf(buffer, bufferLength, "%d|%s|%d|%.2f|%.2f|%.2f|%d|%s\n", user->id, user->name, user->age, user->height, user->weight, user->bmi, user->sex, currDateTime);
     fprintf(file, buffer);
     
     free(buffer);
