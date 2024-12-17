@@ -9,15 +9,21 @@
 
 int getLastUserId() {
     char *filePath = getDbFilePath();
+    if (filePath == NULL) {
+        perror("Failed to get path.");
+        return -1;
+    }
+
     FILE *file = fopen(filePath, "r");
-    char line[256];
-    int lastId = 0;
 
     if (file == NULL) {
         perror("Error opening file");
         free(filePath);
         return -1; 
     }
+
+    char line[256];
+    int lastId = 0;
 
     while (fgets(line, sizeof(line), file) != NULL) {
         char *token = strtok(line, "|");
@@ -26,8 +32,7 @@ int getLastUserId() {
         }
     }
 
-    fclose(file);
-    free(filePath);
+    closeDBFile(&file, &filePath);
 
     return lastId;
 }
@@ -36,7 +41,18 @@ void createUser(User *user) {
     printf("\n=========== PROFILE SETUP ===========\n");
 
     char *filePath = getDbFilePath();
+
+    if (filePath == NULL) {
+        perror("Failed to get path.");
+        return;
+    }
     FILE *file = fopen(filePath, "a+");
+
+    if (file == NULL) {
+        perror("Error opening file");
+        free(filePath);
+        return; 
+    }
     char ch;
     bool isValid = true;
 
@@ -80,7 +96,7 @@ void createUser(User *user) {
     } while (!isValid);
     
     char *currDateTime = getCurrentLocalDateTime();
-    int bufferLength = strlen(user->name) + MAX_AGE_DIGIT + MAX_FLOAT_DIGIT * 3 + strlen(currDateTime) + MEMBERS_COUNT - 1;
+    int bufferLength = strlen(user->name) + MAX_AGE_DIGIT + MAX_FLOAT_DIGIT * 3 + strlen(currDateTime) + 1 + MEMBERS_COUNT;
     char *buffer = malloc(bufferLength);
 
     if (!buffer) {
@@ -94,39 +110,47 @@ void createUser(User *user) {
     snprintf(buffer, bufferLength, "%d|%s|%d|%.2f|%.2f|%.2f|%s\n", user->id, user->name, user->age, user->height, user->weight, user->bmi, currDateTime);
     fprintf(file, buffer);
     
-    free(filePath);
     free(buffer);
 
-    fclose(file);
+    closeDBFile(&file, &filePath);
 
     printf("User sucessfully created.\n");
     printf("\n\n");
 }
 
-void getUser(int targetLine, User *user) {
+char *getUser(int targetLine, User *user) {
     char *filePath = getDbFilePath();
-    FILE *file = fopen(filePath, "r");
-    int currentLine = 1;
-    char buffer[255];
-
-    if (file == NULL) {
-        perror("Error opening file.");
-        exit(EXIT_FAILURE);
+    if (filePath == NULL) {
+        perror("Failed to get path.");
+        return NULL;
     }
 
-    while (fgets(buffer, sizeof(buffer), file) != NULL) {
+    FILE *file = fopen(filePath, "r");
+    if (file == NULL) {
+        perror("Error opening file.");
+        return NULL;
+    }
+
+    int currentLine = 1;
+    char *buffer = malloc(256);
+
+    if (buffer == NULL) {
+        perror("Error memory allocation.");
+        return NULL;
+    }
+
+    while (fgets(buffer, 256, file) != NULL) {
         if (currentLine == targetLine) {
-            decomposeLine(buffer, user);
-            break;
+            closeDBFile(&file, &filePath);
+            return buffer;
         }
         currentLine++;
     }
 
-    if (currentLine < targetLine) {
-        printf("User does not exist.\n");
-    }
+    printf("User does not exist.\n");
 
-    fclose(file);
+    closeDBFile(&file, &filePath);
+    return NULL;
 }
 
 
@@ -135,15 +159,32 @@ int displayUsers() {
     char line[256];
     char *token;
     int tokenIndex = 0;
-    char *filePath = getDbFilePath();
-    FILE *file = fopen(filePath, "r");
 
+    char *filePath = getDbFilePath();
+    if (filePath == NULL) {
+        perror("Failed to get path.");
+        return -1;
+    }
+
+    FILE *file = fopen(filePath, "r");
     if (file == NULL) {
         perror("Error opening file");
         free(filePath);
         return -1; 
     }
+
     printf("\n=========== PROFILE LIST ===========\n");
+
+    if (fgetc(file) == EOF) {
+        printf("\tNo profiles created.\n");
+        printf("=====================================\n\n");
+        free(filePath); 
+        fclose(file);
+        return -1;
+    }
+
+    fseek(file, 0, SEEK_SET);
+
     while (fgets(line, sizeof(line), file) != NULL) {
         tokenIndex = 0;
         token = strtok(line, "|");
@@ -155,28 +196,50 @@ int displayUsers() {
             tokenIndex++;
         }
     }
-    printf("=====================================\n\n");   
-    fclose(file);
-    free(filePath);
+    printf("=====================================\n\n");  
+
+    closeDBFile(&file, &filePath); 
     
     return userCount;
 }
 
 void retrieveAllUsers() {
-    char option;
+    char option[3];
     char line[256];
     char *filePath = getDbFilePath();
+    
+    if (filePath == NULL) {
+        perror("Failed to get path.");
+        return;
+    }
+
     FILE *file = fopen(filePath, "r");
+    if (file == NULL) {
+        perror("Error opening file");
+        free(filePath);
+        return; 
+    }
 
     int userCount = displayUsers();
 
-    printf("Show details? (Y/n): ");
-    scanf("%c", &option);
+    if (userCount > 0) {
+        printf("Show details? (Y/n): ");
+        fgets(option, sizeof(option), stdin);
+        option[strlen(option)] = '\0';
+        option[strcspn(option, "\n")] = 0;
+        
+        if (strlen(option) > 1) {
+            clearInputBuffer();
+            printf("Invalid option.\n\n");
+            return;
+        }
+    }
 
-    if (option == 'Y' || option == 'y') {
+    if (option[0] == 'Y' || option[0] == 'y') {
         int noOfPages = ceil((double)userCount / PAGE_BREAK_LIMIT);
         int currentUserCount = 0;
         int page = 1;
+        option[0] = '\0';
 
         while (true) {
             printf("\n=========== PAGE %d/%d ===============\n", page, noOfPages);
@@ -191,33 +254,58 @@ void retrieveAllUsers() {
                 showDetails(line, &currentUserCount);
             }
 
-            clearInputBuffer();
             printf("====================================\n");
-            printf("See other pages? (Y/n): ");
-            scanf("%c", &option);
 
-            if (option == 'Y' || option == 'y') {
-                printf("Select page (1-%d): ", noOfPages);
-                scanf("%d", &page);
-
-                if (page < 1 || page > noOfPages) {
-                    printf("Invalid page. Returning to main menu.\n");
+            if (noOfPages > 1) {
+                printf("See other pages? (Y/n): ");
+                fgets(option, sizeof(option), stdin);
+                option[strlen(option)] = '\0';
+                option[strcspn(option, "\n")] = 0;
+                if (strlen(option) > 1) {
+                    printf("Invalid option.\n\n");
+                    clearInputBuffer();
                     break;
                 }
+            }
+            else {
+                break;
+            }
+
+            if (option[0] == 'Y' || option[0] == 'y') {
+                printf("Select page (1-%d): ", noOfPages);
+                
+                if ((!scanf("%d", &page)) || (page < 1 || page > noOfPages)) {
+                    printf("Invalid page. Returning to main menu.\n");
+                    clearInputBuffer();
+                    break;
+                }
+                clearInputBuffer();
             } else {
                 break;
             }
         }
     }
+    else {
+        if (option[0] != 'n' && option[0] != 'N') {
+            printf("Invalid input.\n\n");
+        }
+    }
 
     printf("\n");
-    fclose(file);
-    free(filePath);
+
+    closeDBFile(&file, &filePath);
 }
 
-void decomposeLine(char *line, User *user) {
+
+void setCurrentUser(User *user) {
+    int userChoice;
+
+    displayUsers();
+    printf("Choose user: ");
+    scanf("%d", &userChoice);
+
     char *token;
-    token = strtok(line, "|");
+    token = strtok(getUser(userChoice, user), "|");
     
     int i = 0;
     while (token != NULL) {
@@ -239,6 +327,9 @@ void decomposeLine(char *line, User *user) {
                 user->weight = atof(token);
                 break;
             case 5:
+                user->bmi = atof(token);
+                break;
+            case 6:
                 strcpy(user->datetime, token);
                 user->datetime[strlen(user->datetime)] = '\0';
                 break;
@@ -250,17 +341,90 @@ void decomposeLine(char *line, User *user) {
     }
 }
 
-void setCurrentUser(User *user) {
-    int userChoice;
+int deleteUser() {
+    char *filePath = getDbFilePath();
+    if (filePath == NULL) {
+        perror("Failed to get path.");
+        return -1;
+    }
 
-    displayUsers();
-    printf("Choose user: ");
-    scanf("%d", &userChoice);
+    FILE *file = fopen(filePath, "r");
 
-    getUser(userChoice, user);
+    if (file == NULL) {
+        perror("File cannot be opened.");
+        free(filePath);
+        return -1;
+    }
+
+    FILE *tempFile = fopen("database/temp.txt", "w");
+    if (tempFile == NULL) {
+        perror("Error opening temp file.");
+        free(filePath);
+        return -1;
+    }
+    
+    int selectedLine;
+    int userCount = displayUsers();
+    int ch = fgetc(file);
+
+    if (ch != EOF) {
+        printf("User to be deleted (-1 to exit): ");
+        if (!scanf("%d", &selectedLine) || (selectedLine < 1 || selectedLine > userCount)) {
+            printf("Invalid input. Returning to main menu.\n\n");
+            clearInputBuffer();
+            closeDBFile(&file, &filePath);
+            return -1;
+        }
+    }
+    else {
+        printf("No profiles created.\n\n");
+        return -1;
+    }
+
+    int bufferSize = 256;
+    char *buffer = malloc(bufferSize);
+    fseek(file, 0, SEEK_SET);
+    int lineCount = 0;
+    int bufferCount = 0;
+
+    while ((ch = fgetc(file)) != EOF) {
+       if (ch == '\n') {
+            lineCount++;
+        }
+        if (lineCount == selectedLine - 1) {
+            continue;
+        }
+        if (bufferCount == bufferSize - 1) {
+            char *temp = realloc(buffer, bufferSize * 2);
+            if (temp == NULL) {
+                perror("Memory reallocation failed.");
+                free(buffer);
+                return -1;
+            }
+            buffer = temp;
+            bufferSize *= 2;
+        }
+        buffer[bufferCount++] = ch;
+    }
+    buffer[bufferCount] = '\0';
+    fprintf(tempFile, buffer);
+
+    fclose(tempFile);
+    fclose(file);
+
+    if (remove(filePath) != 0) {
+        perror("Error deleting the original file");
+        return -1;
+    }
+
+    if (rename(TEMP_DB_FILE, filePath) != 0) {
+        perror("Error renaming temporary file");
+    } else {
+        printf("User successfully deleted.\n\n");
+    }
+
+    free(buffer);
+    free(filePath);
+
+    return 0;
 }
-
-// void deleteUser() {
-//     char *filePath = getDbFilePath();
-//     FILE *file = fopen(filePath, "r");
-// }

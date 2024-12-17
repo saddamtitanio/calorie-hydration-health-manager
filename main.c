@@ -27,7 +27,12 @@ int main(void) {
             clearInputBuffer();
             continue;
         }
-        if (option == 6) return 0;
+        if (option == 5 && strcmp(user.name, "") == 0) {
+            printf("Select a user continue.\n\n");
+            option = -1;
+            continue;
+        }
+        if (option == 6) return 0; 
 
         clearInputBuffer();
         handleProfileOption(option, &user);
@@ -53,6 +58,7 @@ void handleProfileOption(int option, User *user) {
             setCurrentUser(user);
             break;
         case 4:
+            deleteUser();
             break;
         case 5:
             break;
