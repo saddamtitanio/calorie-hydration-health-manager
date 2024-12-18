@@ -3,26 +3,30 @@
 #include <string.h>
 #include <stdbool.h>
 
+
 #include "utils/menu.h"
 #include "utils/utils.h"
 #include "db/db_directory.h"
 #include "controller/usersController.h"
 #include "controller/healthController.h"
 
+
 void handleProfileOption(int option, User *user);
 void healthProfile(User *user);
 void displayHealthProfile(User *user, Progress progress);
 
+
 int main(void) {
     int option;
     User user = {.name = ""};
-    
+   
     createDbFile(USER_FILE);
     do {
         displayTitleMenu();
         if (strcmp(user.name, "") == 0) printf("Active Profile: None\n");
         else printf("Active Profile: %s\n", user.name);
         displayOptionMenu();
+
 
         printf("Option: ");
         if (!scanf("%d", &option) || (option < 1 || option > 6)) {
@@ -35,14 +39,17 @@ int main(void) {
             option = -1;
             continue;
         }
-        if (option == 6) return 0; 
+        if (option == 6) return 0;
+
 
         clearInputBuffer();
         handleProfileOption(option, &user);
     } while (option != 6 && option != 5);
 
+
     return 0;
 }
+
 
 void handleProfileOption(int option, User *user) {
     switch (option) {
@@ -66,6 +73,7 @@ void handleProfileOption(int option, User *user) {
     }
 }
 
+
 void healthProfile(User *user) {
     FitnessStatus fitnessStatus = bmiCategory(user->bmi);
     Progress progress;
@@ -73,7 +81,7 @@ void healthProfile(User *user) {
     float targetWeight;
     int noOfDays, lifestyleOption;
     bool isValid;
-    
+   
     printf("\n");
     do {
         if (!isNullHealthProfile(user->id)) {
@@ -89,6 +97,7 @@ void healthProfile(User *user) {
             printf("Number of days to reach the goal: ");
             scanf("%d", &noOfDays);
 
+
             printf("Select Lifestyle\n1. Sedentary\n2. Lightly active\n3. Moderately active\n");
             printf("4. Very active\n5. Extra active\nOption (1 - 5): ");
             scanf("%d", &lifestyleOption);
@@ -100,13 +109,16 @@ void healthProfile(User *user) {
     } while (option != -1);
 }
 
+
 void displayHealthProfile(User *user, Progress progress) {
     FitnessStatus fitnessStatus = bmiCategory(user->bmi);
     printf("\n=========== HEALTH PROFILE ===========\n");
     printf("| Current weight: %-15.2f kg |\n", user->weight);
     printf("| Your BMI is: %-21.2f |\n", user->bmi);
     printf("| BMI Category: %-20s |\n", printStatus(fitnessStatus));
-    printf("| Target weight: %-16.2f kg |\n", progress.targetWeight); 
+    printf("| Target weight: %-16.2f kg |\n", progress.targetWeight);
     printf("======================================\n");
-        
+
+
+    float BMR = calculateBMR(user, progress);
 }
