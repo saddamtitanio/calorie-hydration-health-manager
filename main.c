@@ -7,14 +7,16 @@
 #include "utils/utils.h"
 #include "db/db_directory.h"
 #include "controller/usersController.h"
+#include "controller/healthController.h"
 
 void handleProfileOption(int option, User *user);
+void healthProfile(User *user);
 
 int main(void) {
     int option;
     User user = {.name = ""};
     
-    createDbFile();
+    createDbFile(USER_FILE);
     do {
         displayTitleMenu();
         if (strcmp(user.name, "") == 0) printf("Active Profile: None\n");
@@ -38,11 +40,6 @@ int main(void) {
         handleProfileOption(option, &user);
     } while (option != 6 && option != 5);
 
-    printf("\n");
-    if (option == 5) {
-        printf("TEST.\n");
-    }
-
     return 0;
 }
 
@@ -61,8 +58,39 @@ void handleProfileOption(int option, User *user) {
             deleteUser();
             break;
         case 5:
+            healthProfile(user);
             break;
         default:
             break;
     }
+}
+
+void healthProfile(User *user) {
+    FitnessStatus fitnessStatus = bmiCategory(user->bmi);
+    int option;
+    float targetWeight;
+    int noOfDays;
+    bool isValid;
+    
+    printf("\n");
+    do {
+        printf("============================\n");
+        printf("| Current weight: %.2f kg |\n", user->weight);
+        printf("| Your BMI is: %.2f       |\n", user->bmi);
+        printf("| BMI Category: %-2s |\n", printStatus(fitnessStatus));
+        printf("============================\n");
+        
+        do {
+            printf("\nTarget Weight: ");
+            scanf("%f", &targetWeight);
+            isValid = isValidWeightTarget(targetWeight, user->height);
+        } while (!isValid);
+        printf("Number of days to reach the goal: ");
+        scanf("%d", &noOfDays);
+
+        writeHealthFile(user->id, targetWeight, noOfDays);
+
+        scanf("%d", &option);
+
+    } while (option != -1);
 }

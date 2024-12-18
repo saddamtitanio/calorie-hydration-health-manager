@@ -20,6 +20,12 @@ typedef struct {
     int sex;
 } User;
 
+typedef struct {
+    float targetWeight;
+    int targetDays;
+    int userId;
+} Goal;
+
 typedef enum {
     UNDERWEIGHT,
     NORMAL,

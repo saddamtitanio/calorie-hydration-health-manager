@@ -13,16 +13,17 @@
 #endif
 #define DATABASE_DIR "database"
 #define USER_FILE "user.txt"
+#define HEALTH_FILE "health.txt"
 
-char *getDbFilePath() {
-    int filePathSize = strlen(DATABASE_DIR) + strlen("/") + strlen(USER_FILE);
+char *getDbFilePath(const char *file) {
+    int filePathSize = strlen(DATABASE_DIR) + strlen("/") + strlen(file);
     char *filePath = malloc(filePathSize + 1);
     
     if (filePath == NULL) {
         return NULL;
         exit(EXIT_FAILURE);
     }    
-    snprintf(filePath, filePathSize + 1, "%s/%s", DATABASE_DIR, USER_FILE);
+    snprintf(filePath, filePathSize + 1, "%s/%s", DATABASE_DIR, file);
 
     return filePath;
 }
@@ -42,9 +43,9 @@ bool createDbDirectory() {
     return true;
 }
 
-void createDbFile() {
+void createDbFile(const char *fileName) {
     createDbDirectory();
-    char *filePath = getDbFilePath();
+    char *filePath = getDbFilePath(fileName);
     FILE *file = fopen(filePath, "a");
 
     if (file == NULL) {
