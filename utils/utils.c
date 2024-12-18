@@ -111,3 +111,68 @@ char *printStatus(FitnessStatus fitnessStatus) {
         return NULL;
     }
 }
+
+float calculateWaterPercentage(float targetWaterIntake, float currentWaterIntake) {
+    if (targetWaterIntake == 0) {
+        return 0;
+    }
+    return (currentWaterIntake / targetWaterIntake) * 100;
+}
+
+float calculateCaloriePercentage(float targetCalorie, float currentCalorie) {
+    if (targetCalorie == 0) {
+        return 0;
+    }
+    return (currentCalorie / targetCalorie) * 100;
+}
+
+float targetWaterIntake(float weight) {
+    return weight * 0.03 * 1000;
+}
+
+void mealComposition(float BMR, FitnessStatus BMICategory) {
+    float protein = 1;
+    float fat = 1;
+    float carb = 1;
+    
+    if (BMICategory == UNDERWEIGHT) {
+        protein = 0.35;
+        fat = 0.20;
+        carb = 0.45;
+    }
+    else if (BMICategory == NORMAL) {
+        protein = 0.35;
+        fat = 0.20;
+        carb = 0.45;
+    }
+    else if (BMICategory == OVERWEIGHT || BMICategory == OBESE) {
+        protein = 0.5;
+        carb = 0.3;
+        fat = 0.2;
+    }
+
+    printf("\nNutritional Breakdown:\n");
+    printf("--------------------------------\n");
+    printf("| %-15s | %-10s |\n", "Nutrient", "Amount (g)");
+    printf("--------------------------------\n");
+    printf("| %-15s | %10.2f |\n", "Protein", BMR * protein);
+    printf("| %-15s | %10.2f |\n", "Carbohydrates", BMR * carb);
+    printf("| %-15s | %10.2f |\n", "Fat", BMR * fat);
+    printf("--------------------------------\n");
+
+}
+
+char *getDate() {
+    int bufferCapacity = 80;
+    char *buffer = malloc(bufferCapacity);
+
+    time_t now;
+    struct tm *tm_struct;
+
+    time(&now);
+    tm_struct = localtime(&now);
+
+    strftime(buffer, bufferCapacity, "%D", tm_struct);
+
+    return buffer;
+}

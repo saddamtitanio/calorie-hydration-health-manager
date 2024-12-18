@@ -35,6 +35,13 @@ typedef struct {
     Lifestyle lifestyle;
 } Progress;
 
+typedef struct {
+    int userID;
+    float currentWaterIntake; 
+    float currentCalorieIntake;
+    char date[50];
+} UserHealthLog;
+
 typedef enum {
     UNDERWEIGHT,
     NORMAL,
@@ -50,4 +57,5 @@ char *getUser(int targetLine, User *user);
 int displayUsers();
 void retrieveAllUsers();
 int deleteUser();
+
 #endif

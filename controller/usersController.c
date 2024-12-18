@@ -206,7 +206,7 @@ int displayUsers() {
             tokenIndex++;
         }
     }
-    printf("=====================================\n\n");  
+    printf("====================================\n\n");  
 
     closeDBFile(&file, &filePath); 
     
@@ -310,10 +310,12 @@ void retrieveAllUsers() {
 void setCurrentUser(User *user) {
     int userChoice;
 
-    displayUsers();
-    printf("Choose user: ");
-    scanf("%d", &userChoice);
-
+    int canChoice=displayUsers();
+    if (canChoice != -1) {
+        printf("Choose user: ");
+        scanf("%d", &userChoice);
+    }
+    else return;
     char *token;
     token = strtok(getUser(userChoice, user), "|");
     
