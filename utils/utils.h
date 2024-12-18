@@ -5,7 +5,6 @@
 #define NORMAL_HIGH_THRESHOLD_VALUE 24.9
 
 #include "../controller/usersController.h"
-#include "../controller/healthController.h"
 
 void clearInputBuffer();
 char *getCurrentLocalDateTime();
@@ -16,5 +15,10 @@ void showDetails(char *line, int *currentUserCount);
 FitnessStatus bmiCategory(float bmi);
 char *printStatus(FitnessStatus fitnessStatus);
 bool isValidWeightTarget(float targetWeight, float height);
+char *getDate();
+float calculateCaloriePercentage(float targetCalorie, float currentCalorie);
+float calculateWaterPercentage(float targetWaterIntake, float currentWaterIntake);
+float targetWaterIntake(float weight);
+void mealComposition(float BMR, FitnessStatus BMICategory);
 
 #endif

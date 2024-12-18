@@ -107,3 +107,38 @@ Progress setHealthProfile(int id) {
     }
     return progress;
 }
+
+void activityLevelMultiplier(float *BMR, Lifestyle lifestyle) {
+    switch (lifestyle) {
+        case SEDENTARY:
+            *BMR *= 1.2;
+            break;
+        case LIGHTLY_ACTIVE:
+            *BMR *= 1.375;
+            break;
+        case MODERATELY_ACTIVE:
+            *BMR *= 1.55;
+            break;
+        case VERY_ACTIVE:
+            *BMR *= 1.725;
+            break;
+        case EXTRA_ACTIVE:
+            *BMR *= 1.9;
+            break;
+        default:
+            break;
+    }
+}
+
+float calculateBMR(User *user, Progress progress) {
+    float BMR = 10 * user->weight + 6.25 * user->height - 5 * user->age;
+    if (user->sex == 1) {
+        BMR -= 5;
+    }
+    else {
+        BMR -= 161;
+    }
+    activityLevelMultiplier(&BMR, progress.lifestyle);
+
+    return BMR;
+}

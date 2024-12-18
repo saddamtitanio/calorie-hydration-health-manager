@@ -8,10 +8,12 @@
 #include "db/db_directory.h"
 #include "controller/usersController.h"
 #include "controller/healthController.h"
+#include "utils/glass.h"
 
 void handleProfileOption(int option, User *user);
 void healthProfile(User *user);
-void displayHealthProfile(User *user, Progress progress);
+void displayHealthProfile(User *user, Progress progress, UserHealthLog *healthLog);
+void handleLogHealth(int option, UserHealthLog *healthLog, User *user, Progress progress);
 
 int main(void) {
     int option;
@@ -67,8 +69,8 @@ void handleProfileOption(int option, User *user) {
 }
 
 void healthProfile(User *user) {
-    FitnessStatus fitnessStatus = bmiCategory(user->bmi);
     Progress progress;
+    UserHealthLog healthLog = {.userID = -1, .currentCalorieIntake = 0, .currentWaterIntake = 0, .date = ""};
     int option;
     float targetWeight;
     int noOfDays, lifestyleOption;
@@ -78,6 +80,7 @@ void healthProfile(User *user) {
     do {
         if (!isNullHealthProfile(user->id)) {
             progress = setHealthProfile(user->id);
+            healthLog.userID = user->id;
         }
         else {
             printf("Health profile not yet created.\n");
@@ -95,18 +98,81 @@ void healthProfile(User *user) {
             writeHealthFile(user->id, targetWeight, noOfDays, lifestyleOption);
             progress = setHealthProfile(user->id);
         }
-        displayHealthProfile(user, progress);
+        displayHealthProfile(user, progress, &healthLog);
+        printf("Option: ");
         scanf("%d", &option);
-    } while (option != -1);
+        handleLogHealth(option, &healthLog, user, progress);
+
+    } while (option != 4);
 }
 
-void displayHealthProfile(User *user, Progress progress) {
+void handleLogHealth(int option, UserHealthLog *healthLog, User *user, Progress progress) {
     FitnessStatus fitnessStatus = bmiCategory(user->bmi);
-    printf("\n=========== HEALTH PROFILE ===========\n");
-    printf("| Current weight: %-15.2f kg |\n", user->weight);
-    printf("| Your BMI is: %-21.2f |\n", user->bmi);
-    printf("| BMI Category: %-20s |\n", printStatus(fitnessStatus));
-    printf("| Target weight: %-16.2f kg |\n", progress.targetWeight); 
-    printf("======================================\n");
-        
+    float BMR = calculateBMR(user, progress);
+    char exit;
+
+    switch (option) {
+        case 1: {
+            float waterIntake;
+            printf("Enter the amount of water intake (in ml): ");
+            scanf("%f", &waterIntake);
+            healthLog->currentWaterIntake += waterIntake;
+            clearInputBuffer();
+            printf("You have logged %.2f ml of water.\n", waterIntake);
+            break;
+        }
+        case 2: {
+            float calorieIntake;
+            printf("Enter the amount of calorie intake: ");
+            scanf("%f", &calorieIntake);
+            healthLog->currentCalorieIntake += calorieIntake;
+            clearInputBuffer();
+            printf("You have logged %.2f calories.\n", calorieIntake);
+            break;
+        }
+        case 3:
+            do {
+                mealComposition(BMR, fitnessStatus);
+                printf("Exit? (Y/n): ");
+                scanf(" %c", &exit);
+            } while (exit != 'Y' && exit != 'y');
+            break;
+        case 4:
+            break;
+        default:
+            printf("Invalid option. Please try again.\n");
+            break;
+    }
+}
+
+void displayHealthProfile(User *user, Progress progress, UserHealthLog *healthLog) {
+    FitnessStatus fitnessStatus = bmiCategory(user->bmi);
+    float BMR = calculateBMR(user, progress);
+    char *date = getDate();
+    float goalWater = targetWaterIntake(user->weight);
+
+    float caloriePercentage = calculateCaloriePercentage(BMR, healthLog->currentCalorieIntake);
+    float waterPercentage = calculateWaterPercentage(goalWater, healthLog->currentWaterIntake);
+    
+    printf("\n ================= HEALTH PROFILE ==================\n");
+    printf("|                                                   |\n");
+    printf("| Current Weight: %-30.2f kg |\n", user->weight);
+    printf("| Your BMI is: %-36.2f |\n", user->bmi);
+    printf("| BMI Category: %-35s |\n", printStatus(fitnessStatus));
+    printf("| Target Weight: %-31.2f kg |\n", progress.targetWeight);
+    printf("| Daily Basal Metabolic Rate (BMR): %-11.2f cal |\n", BMR); 
+    printf("| Daily Water Intake Goal: %-21.2f ml |\n", goalWater);
+    printf("|                                                   |\n");
+    printf(" =============== PROGRESS (%s) ===============\n", date);
+    printf("|                                                   |\n");
+    printf("| Water Intake: %-25.2f ml (%2.f %%) |\n", healthLog->currentWaterIntake, waterPercentage);
+    printf("| Calorie Intake: %-22.2f cal (%2.f %%) |\n", healthLog->currentCalorieIntake, caloriePercentage);
+    printf("|                                                   |\n");
+    printf(" ===================================================\n");
+    
+    createGlassArt(waterPercentage);
+
+    printf("\n1. Log water intake\t\t2. Log calorie intake\n3. View nutrient composition\t");
+    printf("4. Exit\n");
+    free(date);
 }

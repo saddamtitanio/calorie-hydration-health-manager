@@ -7,4 +7,7 @@ void writeHealthFile(int userId, float targetWeight, int targetDays, Lifestyle l
 bool isNullHealthProfile(int id);
 char *readHealthProfile(int id);
 Progress setHealthProfile(int id);
+void activityLevelMultiplier(float *BMR, Lifestyle lifestyle);
+float calculateBMR(User *user, Progress progress);
+
 #endif
