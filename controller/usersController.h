@@ -9,6 +9,14 @@
 
 #define TEMP_DB_FILE "database/temp.txt"
 
+typedef enum {
+    SEDENTARY,
+    LIGHTLY_ACTIVE,
+    MODERATELY_ACTIVE,
+    VERY_ACTIVE,
+    EXTRA_ACTIVE
+} Lifestyle;
+
 typedef struct {
     int id;
     char name[MAX_NAME_LENGTH + 1];
@@ -21,10 +29,11 @@ typedef struct {
 } User;
 
 typedef struct {
+    int userId;
     float targetWeight;
     int targetDays;
-    int userId;
-} Goal;
+    Lifestyle lifestyle;
+} Progress;
 
 typedef enum {
     UNDERWEIGHT,
@@ -41,5 +50,4 @@ char *getUser(int targetLine, User *user);
 int displayUsers();
 void retrieveAllUsers();
 int deleteUser();
-
 #endif
