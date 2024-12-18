@@ -11,6 +11,7 @@
 
 void handleProfileOption(int option, User *user);
 void healthProfile(User *user);
+void displayHealthProfile(User *user);
 
 int main(void) {
     int option;
@@ -69,28 +70,40 @@ void healthProfile(User *user) {
     FitnessStatus fitnessStatus = bmiCategory(user->bmi);
     int option;
     float targetWeight;
-    int noOfDays;
+    int noOfDays, lifestyleOption;
     bool isValid;
     
     printf("\n");
     do {
-        printf("============================\n");
-        printf("| Current weight: %.2f kg |\n", user->weight);
-        printf("| Your BMI is: %.2f       |\n", user->bmi);
-        printf("| BMI Category: %-2s |\n", printStatus(fitnessStatus));
-        printf("============================\n");
-        
-        do {
-            printf("\nTarget Weight: ");
-            scanf("%f", &targetWeight);
-            isValid = isValidWeightTarget(targetWeight, user->height);
-        } while (!isValid);
-        printf("Number of days to reach the goal: ");
-        scanf("%d", &noOfDays);
+        if (!isNullHealthProfile(user->id)) {
+            displayHealthProfile(user);
+            setHealthProfile(user->id);
+        }
+        else {
+            do {
+                printf("\nTarget Weight (kg): ");
+                scanf("%f", &targetWeight);
+                isValid = isValidWeightTarget(targetWeight, user->height);
+            } while (!isValid);
+            printf("Number of days to reach the goal: ");
+            scanf("%d", &noOfDays);
 
-        writeHealthFile(user->id, targetWeight, noOfDays);
+            printf("Select Lifestyle\n1. Sedentary\n2. Lightly active\n3. Moderately active\n");
+            printf("4. Very active\n5. Extra active\nOption (1 - 5): ");
+            scanf("%d", &lifestyleOption);
+            writeHealthFile(user->id, targetWeight, noOfDays, lifestyleOption);
+        }
 
         scanf("%d", &option);
-
     } while (option != -1);
+}
+
+void displayHealthProfile(User *user) {
+    FitnessStatus fitnessStatus = bmiCategory(user->bmi);
+    printf("=================================\n");
+    printf("| Current weight: %-10.2f kg |\n", user->weight);
+    printf("| Your BMI is: %-16.2f |\n", user->bmi);
+    printf("| BMI Category: %-15s |\n", printStatus(fitnessStatus));
+    printf("=================================\n");
+        
 }
