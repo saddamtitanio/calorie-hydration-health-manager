@@ -11,7 +11,7 @@
 
 void handleProfileOption(int option, User *user);
 void healthProfile(User *user);
-void displayHealthProfile(User *user);
+void displayHealthProfile(User *user, Progress progress);
 
 int main(void) {
     int option;
@@ -68,6 +68,7 @@ void handleProfileOption(int option, User *user) {
 
 void healthProfile(User *user) {
     FitnessStatus fitnessStatus = bmiCategory(user->bmi);
+    Progress progress;
     int option;
     float targetWeight;
     int noOfDays, lifestyleOption;
@@ -76,10 +77,10 @@ void healthProfile(User *user) {
     printf("\n");
     do {
         if (!isNullHealthProfile(user->id)) {
-            displayHealthProfile(user);
-            setHealthProfile(user->id);
+            progress = setHealthProfile(user->id);
         }
         else {
+            printf("Health profile not yet created.\n");
             do {
                 printf("\nTarget Weight (kg): ");
                 scanf("%f", &targetWeight);
@@ -92,18 +93,20 @@ void healthProfile(User *user) {
             printf("4. Very active\n5. Extra active\nOption (1 - 5): ");
             scanf("%d", &lifestyleOption);
             writeHealthFile(user->id, targetWeight, noOfDays, lifestyleOption);
+            progress = setHealthProfile(user->id);
         }
-
+        displayHealthProfile(user, progress);
         scanf("%d", &option);
     } while (option != -1);
 }
 
-void displayHealthProfile(User *user) {
+void displayHealthProfile(User *user, Progress progress) {
     FitnessStatus fitnessStatus = bmiCategory(user->bmi);
-    printf("=================================\n");
-    printf("| Current weight: %-10.2f kg |\n", user->weight);
-    printf("| Your BMI is: %-16.2f |\n", user->bmi);
-    printf("| BMI Category: %-15s |\n", printStatus(fitnessStatus));
-    printf("=================================\n");
+    printf("\n=========== HEALTH PROFILE ===========\n");
+    printf("| Current weight: %-15.2f kg |\n", user->weight);
+    printf("| Your BMI is: %-21.2f |\n", user->bmi);
+    printf("| BMI Category: %-20s |\n", printStatus(fitnessStatus));
+    printf("| Target weight: %-16.2f kg |\n", progress.targetWeight); 
+    printf("======================================\n");
         
 }

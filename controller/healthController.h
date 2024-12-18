@@ -6,4 +6,5 @@
 void writeHealthFile(int userId, float targetWeight, int targetDays, Lifestyle lifestyle);
 bool isNullHealthProfile(int id);
 char *readHealthProfile(int id);
+Progress setHealthProfile(int id);
 #endif

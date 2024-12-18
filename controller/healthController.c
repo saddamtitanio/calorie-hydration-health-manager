@@ -76,14 +76,34 @@ char *readHealthProfile(int id) {
     }
     while (fgets(buffer, sizeof(buffer), file) != NULL) {
         char *line = buffer;
-        char *token = strchr(line, '|');
-        
-        if (token) {
-            if (atoi(buffer) == id) {
-                return line;
-            }
+        if (atoi(buffer) == id) {
+            return line;
         }
     }
     return NULL;
 
+}
+
+Progress setHealthProfile(int id) {
+    char *profile = readHealthProfile(id);
+    char *token = strtok(profile, "|");
+    Progress progress;
+    int tokenCount = 0;
+    while (token != NULL) {
+        if (tokenCount == 0) {
+            progress.userId = atoi(token);
+        }
+        else if (tokenCount == 1) {
+            progress.targetWeight = atof(token);
+        }
+        else if (tokenCount == 2) {
+            progress.targetDays = atoi(token);
+        }
+        else if (tokenCount == 3) {
+            progress.lifestyle = atoi(token);
+        }
+        tokenCount++;
+        token = strtok(NULL, "|");
+    }
+    return progress;
 }
