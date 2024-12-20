@@ -8,7 +8,7 @@
 #include "usersController.h"
 
 int getLastUserId() {
-    char *filePath = getDbFilePath();
+    char *filePath = getDbFilePath(USER_FILE);
     if (filePath == NULL) {
         perror("Failed to get path.");
         return -1;
@@ -40,7 +40,7 @@ int getLastUserId() {
 void createUser(User *user) {
     printf("\n=========== PROFILE SETUP ===========\n");
 
-    char *filePath = getDbFilePath();
+    char *filePath = getDbFilePath(USER_FILE);
 
     if (filePath == NULL) {
         perror("Failed to get path.");
@@ -129,7 +129,7 @@ void createUser(User *user) {
 }
 
 char *getUser(int targetLine, User *user) {
-    char *filePath = getDbFilePath();
+    char *filePath = getDbFilePath(USER_FILE);
     if (filePath == NULL) {
         perror("Failed to get path.");
         return NULL;
@@ -170,7 +170,7 @@ int displayUsers() {
     char *token;
     int tokenIndex = 0;
 
-    char *filePath = getDbFilePath();
+    char *filePath = getDbFilePath(USER_FILE);
     if (filePath == NULL) {
         perror("Failed to get path.");
         return -1;
@@ -206,7 +206,7 @@ int displayUsers() {
             tokenIndex++;
         }
     }
-    printf("=====================================\n\n");  
+    printf("====================================\n\n");  
 
     closeDBFile(&file, &filePath); 
     
@@ -214,9 +214,9 @@ int displayUsers() {
 }
 
 void retrieveAllUsers() {
-    char option[3];
+    char option[3] = {'n'};
     char line[256];
-    char *filePath = getDbFilePath();
+    char *filePath = getDbFilePath(USER_FILE);
     
     if (filePath == NULL) {
         perror("Failed to get path.");
@@ -310,9 +310,12 @@ void retrieveAllUsers() {
 void setCurrentUser(User *user) {
     int userChoice;
 
-    displayUsers();
-    printf("Choose user: ");
-    scanf("%d", &userChoice);
+    int canDisplay = displayUsers();
+
+    if (canDisplay != -1) {
+        printf("Choose user: ");
+        scanf("%d", &userChoice);   
+    }
 
     char *token;
     token = strtok(getUser(userChoice, user), "|");
@@ -352,7 +355,7 @@ void setCurrentUser(User *user) {
 }
 
 int deleteUser() {
-    char *filePath = getDbFilePath();
+    char *filePath = getDbFilePath(USER_FILE);
     if (filePath == NULL) {
         perror("Failed to get path.");
         return -1;
@@ -387,7 +390,6 @@ int deleteUser() {
         }
     }
     else {
-        printf("No profiles created.\n\n");
         return -1;
     }
 
@@ -398,23 +400,22 @@ int deleteUser() {
     int bufferCount = 0;
 
     while ((ch = fgetc(file)) != EOF) {
-       if (ch == '\n') {
-            lineCount++;
-        }
         if (lineCount == selectedLine - 1) {
+            if (ch == '\n') lineCount++;
             continue;
         }
         if (bufferCount == bufferSize - 1) {
             char *temp = realloc(buffer, bufferSize * 2);
             if (temp == NULL) {
                 perror("Memory reallocation failed.");
-                free(buffer);
                 return -1;
             }
             buffer = temp;
             bufferSize *= 2;
         }
         buffer[bufferCount++] = ch;
+
+        if (ch == '\n') lineCount++;
     }
     buffer[bufferCount] = '\0';
     fprintf(tempFile, buffer);

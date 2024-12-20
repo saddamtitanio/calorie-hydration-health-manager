@@ -10,6 +10,7 @@ SOURCES=(
   "./utils/utils.c"
   "./db/db_directory.c"
   "./controller/usersController.c"
+  "./controller/healthController.c"
 )
 
 echo "Compiling..."

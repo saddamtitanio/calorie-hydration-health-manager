@@ -9,6 +9,14 @@
 
 #define TEMP_DB_FILE "database/temp.txt"
 
+typedef enum {
+    SEDENTARY,
+    LIGHTLY_ACTIVE,
+    MODERATELY_ACTIVE,
+    VERY_ACTIVE,
+    EXTRA_ACTIVE
+} Lifestyle;
+
 typedef struct {
     int id;
     char name[MAX_NAME_LENGTH + 1];
@@ -19,6 +27,20 @@ typedef struct {
     float bmi;
     int sex;
 } User;
+
+typedef struct {
+    int userId;
+    float targetWeight;
+    int targetDays;
+    Lifestyle lifestyle;
+} Progress;
+
+typedef struct {
+    int userID;
+    float currentWaterIntake; 
+    float currentCalorieIntake;
+    char date[50];
+} UserHealthLog;
 
 typedef enum {
     UNDERWEIGHT,

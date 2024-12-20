@@ -59,25 +59,42 @@ void showDetails(char *line, int *currentUserCount) {
         else if (tokenIndex == 4) {
             printf("| %-3s %s %-16.2f kg |\n", " ", "Weight: ", atof(token));
         }
+        else if (tokenIndex == 6) {
+            printf("| %-3s %-8s %-19s |\n", " ", "Sex: ", atoi(token) == 1 ? "Male" : "Female");
+        }
         token = strtok(NULL, "|");
         tokenIndex++;
     }
     printf("|%-34s|\n", " ");
 }
 
-FitnessStatus bmiCategory(User *user) {
-    if (user->bmi < 18.5) {
+FitnessStatus bmiCategory(float bmi) {
+    if (bmi < 18.5) {
         return UNDERWEIGHT;
     }
-    else if (user->bmi < 25) {
+    else if (bmi < 25) {
         return NORMAL;
     }
-    else if (user->bmi < 30) {
+    else if (bmi < 30) {
         return OVERWEIGHT;
     }
     else {
         return OBESE;
     }
+}
+
+bool isValidWeightTarget(float targetWeight, float height) {
+    float newBMI = calculateBMI(height, targetWeight);
+    FitnessStatus fitnessStatus = bmiCategory(newBMI);
+    height /= 100;
+
+    if (fitnessStatus == UNDERWEIGHT || fitnessStatus == OVERWEIGHT || fitnessStatus == OBESE) {
+        float lowWeightRange = NORMAL_LOW_THRESHOLD_VALUE * height * height;
+        float highWeightRange = NORMAL_HIGH_THRESHOLD_VALUE * height * height;
+        printf("Invalid weight range. Valid range (%.2f kg - %.2f kg)\n", lowWeightRange, highWeightRange);
+        return false;
+    }
+    return true;
 }
 
 char *printStatus(FitnessStatus fitnessStatus) {
@@ -96,4 +113,69 @@ char *printStatus(FitnessStatus fitnessStatus) {
     else {
         return NULL;
     }
+}
+
+float calculateWaterPercentage(float targetWaterIntake, float currentWaterIntake) {
+    if (targetWaterIntake == 0) {
+        return 0;
+    }
+    return (currentWaterIntake / targetWaterIntake) * 100;
+}
+
+float calculateCaloriePercentage(float targetCalorie, float currentCalorie) {
+    if (targetCalorie == 0) {
+        return 0;
+    }
+    return (currentCalorie / targetCalorie) * 100;
+}
+
+float targetWaterIntake(float weight) {
+    return weight * 0.03 * 1000;
+}
+
+void mealComposition(float BMR, FitnessStatus BMICategory) {
+    float protein = 1;
+    float fat = 1;
+    float carb = 1;
+    
+    if (BMICategory == UNDERWEIGHT) {
+        protein = 0.35;
+        fat = 0.20;
+        carb = 0.45;
+    }
+    else if (BMICategory == NORMAL) {
+        protein = 0.35;
+        fat = 0.20;
+        carb = 0.45;
+    }
+    else if (BMICategory == OVERWEIGHT || BMICategory == OBESE) {
+        protein = 0.5;
+        carb = 0.3;
+        fat = 0.2;
+    }
+
+    printf("\nNutritional Breakdown:\n");
+    printf("--------------------------------\n");
+    printf("| %-15s | %-10s |\n", "Nutrient", "Amount (g)");
+    printf("--------------------------------\n");
+    printf("| %-15s | %10.2f |\n", "Protein", BMR * protein);
+    printf("| %-15s | %10.2f |\n", "Carbohydrates", BMR * carb);
+    printf("| %-15s | %10.2f |\n", "Fat", BMR * fat);
+    printf("--------------------------------\n");
+
+}
+
+char *getDate() {
+    int bufferCapacity = 80;
+    char *buffer = malloc(bufferCapacity);
+
+    time_t now;
+    struct tm *tm_struct;
+
+    time(&now);
+    tm_struct = localtime(&now);
+
+    strftime(buffer, bufferCapacity, "%D", tm_struct);
+
+    return buffer;
 }
