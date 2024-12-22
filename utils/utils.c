@@ -33,8 +33,8 @@ bool rangeCheck(void *value, int dataType, const char *msg, bool *isValid) {
     return true;
 }
 
-bool isDataValid(int scanf, bool *isValid, const char *msg) {
-    if (!scanf) {
+bool isDataValid(int inputResult, bool *isValid, const char *msg) {
+    if (!inputResult) {
         *isValid = false;
         printf("%s\n\n", msg);
         clearInputBuffer();
@@ -58,6 +58,9 @@ void showDetails(char *line, int *currentUserCount) {
         }
         else if (tokenIndex == 4) {
             printf("| %-3s %s %-16.2f kg |\n", " ", "Weight: ", atof(token));
+        }
+        else if (tokenIndex == 6) {
+            printf("| %-3s %-8s %-19s |\n", " ", "Sex: ", atoi(token) == 1 ? "Male" : "Female");
         }
         token = strtok(NULL, "|");
         tokenIndex++;

@@ -214,7 +214,7 @@ int displayUsers() {
 }
 
 void retrieveAllUsers() {
-    char option[3];
+    char option[3] = {'n'};
     char line[256];
     char *filePath = getDbFilePath(USER_FILE);
     
@@ -309,8 +309,8 @@ void retrieveAllUsers() {
 
 void setCurrentUser(User *user) {
     int userChoice;
-
     int canChoice=displayUsers();
+  
     if (canChoice != -1) {
         printf("Choose user: ");
         scanf("%d", &userChoice);
@@ -353,6 +353,7 @@ void setCurrentUser(User *user) {
     }
 }
 
+
 int deleteUser() {
     char *filePath = getDbFilePath(USER_FILE);
     if (filePath == NULL) {
@@ -389,9 +390,9 @@ int deleteUser() {
         }
     }
     else {
-        printf("No profiles created.\n\n");
         return -1;
     }
+    
 
     int bufferSize = 256;
     char *buffer = malloc(bufferSize);
@@ -400,23 +401,22 @@ int deleteUser() {
     int bufferCount = 0;
 
     while ((ch = fgetc(file)) != EOF) {
-       if (ch == '\n') {
-            lineCount++;
-        }
         if (lineCount == selectedLine - 1) {
+            if (ch == '\n') lineCount++;
             continue;
         }
         if (bufferCount == bufferSize - 1) {
             char *temp = realloc(buffer, bufferSize * 2);
             if (temp == NULL) {
                 perror("Memory reallocation failed.");
-                free(buffer);
                 return -1;
             }
             buffer = temp;
             bufferSize *= 2;
         }
         buffer[bufferCount++] = ch;
+
+        if (ch == '\n') lineCount++;
     }
     buffer[bufferCount] = '\0';
     fprintf(tempFile, buffer);

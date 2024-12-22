@@ -21,7 +21,6 @@ char *getDbFilePath(const char *file) {
     
     if (filePath == NULL) {
         return NULL;
-        exit(EXIT_FAILURE);
     }    
     snprintf(filePath, filePathSize + 1, "%s/%s", DATABASE_DIR, file);
 
@@ -37,7 +36,7 @@ bool createDbDirectory() {
             return true;
         } else {
             perror("Error creating directory.");
-            exit(EXIT_FAILURE);
+            return false;
         }
     }
     return true;
