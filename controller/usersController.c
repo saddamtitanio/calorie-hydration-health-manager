@@ -309,14 +309,13 @@ void retrieveAllUsers() {
 
 void setCurrentUser(User *user) {
     int userChoice;
-
-    int canDisplay = displayUsers();
-
-    if (canDisplay != -1) {
+    int canChoice=displayUsers();
+  
+    if (canChoice != -1) {
         printf("Choose user: ");
-        scanf("%d", &userChoice);   
+        scanf("%d", &userChoice);
     }
-
+    else return;
     char *token;
     token = strtok(getUser(userChoice, user), "|");
     
