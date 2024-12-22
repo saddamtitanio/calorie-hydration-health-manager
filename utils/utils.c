@@ -33,8 +33,8 @@ bool rangeCheck(void *value, int dataType, const char *msg, bool *isValid) {
     return true;
 }
 
-bool isDataValid(int scanf, bool *isValid, const char *msg) {
-    if (!scanf) {
+bool isDataValid(int inputResult, bool *isValid, const char *msg) {
+    if (!inputResult) {
         *isValid = false;
         printf("%s\n\n", msg);
         clearInputBuffer();

@@ -354,6 +354,7 @@ void setCurrentUser(User *user) {
     }
 }
 
+
 int deleteUser() {
     char *filePath = getDbFilePath(USER_FILE);
     if (filePath == NULL) {
@@ -392,6 +393,7 @@ int deleteUser() {
     else {
         return -1;
     }
+    
 
     int bufferSize = 256;
     char *buffer = malloc(bufferSize);
